@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная страница</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            padding: 20px;
+            margin-top: 0;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        .logout-button {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .logout-button:hover {
+            background-color: #a71d2a;
+        }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="card">
+        <h1>Профсоюз</h1>
+        <h2 id="welcome-message"></h2>
+        <div class="button-container">
+            <button onclick="goToAddMember()">Добавить члена профсоюза</button>
+            <button onclick="goToAdminTicket()">Перейти к профсоюзному билету</button>
+            <button onclick="goToMembersList()">Перейти к списку членов профсоюза</button>
+            <button class="logout-button" onclick="logout()">Выйти</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) {
+        console.error("Токен отсутствует");
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch(`/api/admin_main_page`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+            },
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error("Ошибка авторизации");
+            }
+            return response.json();
+        })
+            .then(data => {
+                if (data.code === 200) {
+                    const welcomeMessage = `Добро пожаловать, ${data.user.first_name}!`;
+                    document.getElementById('welcome-message').textContent = welcomeMessage;
+                } else {
+                    alert(data.message || "Ошибка авторизации");
+                    window.location.href = "/";
+                }
+            });
+    });
+
+    function goToAddMember() {
+        window.location.href = '/add_member';
+    }
+
+    function goToAdminTicket() {
+        window.location.href = '/admin_prof_bilet';
+    }
+
+    function goToMembersList() {
+        window.location.href = '/members_list';
+    }
+
+    function logout() {
+        // Отправляем запрос для выхода
+        fetch("/api/auth/logout", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Не удалось выйти");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.code === 200) {
+                    // Удаляем токены и перенаправляем на страницу авторизации
+                    localStorage.removeItem("access_token");
+                    localStorage.removeItem("refresh_token");
+                    alert("Вы успешно вышли.");
+                    window.location.href = "/";
+
+                }}).catch(error => {
+            console.error("Ошибка при выходе:", error);
+            alert("Ошибка при выходе. Попробуйте снова.");
+        });
+    }
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профсоюзный билет</title>
+    <style>
+        /* Основной стиль для страницы */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #e0e7ff;
+            color: #333;
+        }
+
+        /* Контейнер */
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 800px;
+            text-align: left; /* Выровнять текст по левому краю */
+        }
+
+        /* Заголовок */
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Фотография */
+        #profile-photo {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Информация о пользователе */
+        .info p {
+            font-size: 18px;
+            margin: 5px 0;
+        }
+
+        .info p strong {
+            font-weight: bold; /* Сделать жирным только названия полей */
+        }
+
+        /* Кнопка выхода */
+        .logout-button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #ff4d4d;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        .logout-button:hover {
+            background-color: #ff6666;
+        }
+
+        .logout-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Адаптивное оформление */
+        @media (max-width: 480px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .info p {
+                font-size: 16px;
+            }
+
+            .logout-button {
+                padding: 10px 20px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Ваш профсоюзный билет</h1>
+    <img id="profile-photo" class="profile-photo" alt="Фото профиля">
+
+    <div class="info" id="userInfo">Загрузка данных...</div>
+    <button class="logout-button" onclick="logout()">Выйти</button>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Отправляем запрос для получения информации о пользователе
+        fetch("api/userinfo", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+            },
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Ошибка авторизации");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.code === 200) {
+                    const userInfo = data.user;
+
+                    // Отобразим информацию о пользователе
+                    document.getElementById("userInfo").innerHTML = `
+                    <p><strong>Фамилия:</strong> ${userInfo.last_name}</p>
+                    <p><strong>Имя:</strong> ${userInfo.first_name}</p>
+                    <p><strong>Отчество:</strong> ${userInfo.middle_name || 'Отсутствует'}</p>
+                    <p><strong>Электронная почта:</strong> ${userInfo.email}</p>
+                    <p><strong>Телефон:</strong> ${userInfo.phone_number}</p>
+                    <p><strong>Статус членства:</strong> ${userInfo.membership_status}</p>
+                `;
+
+                    // Если фото есть, показываем его
+                    if (userInfo.photo) {
+                        const profilePhoto = document.getElementById("profile-photo");
+                        profilePhoto.src = `data:image/jpeg;base64,${userInfo.photo}`;
+                    }
+                } else {
+                    document.getElementById("userInfo").textContent = "Ошибка при получении данных пользователя";
+                    console.error("Ошибка при получении данных пользователя:", data.message);
+                    window.location.href = "/";
+                }
+            })
+            .catch(error => {
+                document.getElementById("userInfo").innerHTML = "Ошибка: " + error.message;
+            });
+    });
+
+    function logout() {
+        // Отправляем запрос для выхода
+        fetch("/api/auth/logout", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Не удалось выйти");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.code === 200) {
+                    // Удаляем токены и перенаправляем на страницу авторизации
+                    localStorage.removeItem("access_token");
+                    localStorage.removeItem("refresh_token");
+                    alert("Вы успешно вышли.");
+                    window.location.href = "/";
+
+                }}).catch(error => {
+            console.error("Ошибка при выходе:", error);
+            alert("Ошибка при выходе. Попробуйте снова.");
+        });
+    }
+</script>
+</body>
+</html>
+

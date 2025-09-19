@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .login-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+        }
+        .alt-btn {
+            background-color: #008CBA;
+        }
+    </style>
+</head>
+<body>
+
+
+<div class="login-container">
+    <h2>Вход</h2>
+    <form id="loginForm">
+        <input type="email" id="email" placeholder="Email" required><br>
+        <input type="password" id="password" placeholder="Пароль"><br>
+        <button type="button" onclick="login()">Войти</button><br>
+        <button type="button" class="alt-btn" onclick="resetPassword()">Забыли пароль / Зарегистрироваться</button>
+    </form>
+</div>
+<script>
+    function login() {
+        const email = document.getElementById("email").value; // Изменено на username
+        const password = document.getElementById("password").value;
+
+        
+        const loginData = {
+            email: email, // Используем username вместо email
+            password: password
+        };
+        console.log(JSON.stringify(loginData)); //{"username":"admin","password":"admin"}
+
+        // Отправляем AJAX-запрос
+        fetch("/api/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(loginData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    // Если статус ответа не в диапазоне 200-299, выбрасываем ошибку
+                    throw new Error("Ошибка авторизации");
+                }
+                return response.json(); // Преобразуем ответ в JSON
+            })
+            .then(data => {
+                // Проверяем, соответствует ли ответ ожидаемому
+                if (data.code === 200) { // Используем код из вашего теста
+                    alert("Вход выполнен успешно!");
+                    // Сохраняем токены, если они приходят в ответе
+                    localStorage.setItem("access_token", data.access_token);
+                    localStorage.setItem("refresh_token", data.refresh_token);
+                    // Перенаправление на страницу личного кабинета
+                    if(data.user.role === "admin") {
+                        window.location.href = `/admin_main_menu`; // Убедитесь, что user_id доступен
+                    } else {
+                        window.location.href = `/personal_account`; // Убедитесь, что user_id доступен
+                    }
+                } else {
+                    alert(data.message || "Ошибка авторизации");
+                }
+            })
+            .catch(error => {
+                console.error("Ошибка:", error);
+                alert("Произошла ошибка. Попробуйте еще раз.");
+            });
+    }
+
+    function resetPassword() {
+        const email = document.getElementById('email').value;
+
+        if (!email) {
+            alert('Введите email для сброса или получения пароля');
+            return;
+        }
+
+        fetch('/api/auth/reset_password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Новый пароль отправлен на почту.');
+                } else {
+                    alert('Ошибка: ' + data.message);
+                }
+            });
+    }
+</script>
+</script>
+</body>
+</html>

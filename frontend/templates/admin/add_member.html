@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить члена профсоюза</title>
+    <style>
+        /* Основной стиль для всей страницы */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+
+        /* Контейнер для формы */
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        /* Заголовок */
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Стили для полей формы */
+        input[type="text"],
+        input[type="date"],
+        input[type="email"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        /* Стиль кнопки */
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Эффект наведения на кнопку */
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Дополнительные стили для файла */
+        input[type="file"] {
+            padding: 5px;
+        }
+
+        /* Стиль кнопки "Назад" */
+        .back-button {
+            background-color: #6c757d;
+        }
+
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Добавить члена профсоюза</h1>
+    <form id="addMemberForm">
+        <input type="text" id="lastName" placeholder="Фамилия" required>
+        <input type="text" id="firstName" placeholder="Имя" required>
+        <input type="text" id="middleName" placeholder="Отчество">
+        <input type="date" id="dateBirth" placeholder="Дата рождения" required>
+        <input type="text" id="phoneNumber" placeholder="Номер телефона" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="file" id="photo" placeholder="Фото">
+        <select id="membershipStatus" required>
+            <option value="Active">Активный</option>
+            <option value="Excluded">Исключенный</option>
+        </select>
+        <select id="role" required>
+            <option value="admin">admin</option>
+            <option value="user">user</option>
+        </select>
+        <button type="button" onclick="addMember()">Добавить</button>
+        <!-- Кнопка назад -->
+        <button type="button" class="back-button" onclick="goBack()">Назад</button>
+    </form>
+</div>
+
+<script>
+    function addMember() {
+        const formData = new FormData();
+        formData.append('lastName', document.getElementById('lastName').value);
+        formData.append('firstName', document.getElementById('firstName').value);
+        formData.append('middleName', document.getElementById('middleName').value);
+        formData.append('dateBirth', document.getElementById('dateBirth').value);
+        formData.append('phoneNumber', document.getElementById('phoneNumber').value);
+        formData.append('email', document.getElementById('email').value);
+        formData.append('photo', document.getElementById('photo').files[0]);
+        formData.append('membershipStatus', document.getElementById('membershipStatus').value);
+        formData.append('role', document.getElementById('role').value);
+
+        fetch('/api/add_member', {
+            method: 'POST',
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+            },
+            body: formData
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('Член профсоюза добавлен!');
+                    location.href = '/admin_main_menu';
+                } else {
+                    alert('Ошибка при добавлении');
+                }
+            });
+    }
+
+    function goBack() {
+        window.history.back();
+    }
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список членов профсоюза</title>
+    <style>
+        /* Основной стиль для страницы */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Заголовок страницы */
+        h1 {
+            margin-top: 20px;
+            font-size: 28px;
+            color: #333;
+        }
+
+        /* Контейнер для таблицы */
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin-top: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        /* Стили для таблицы */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th,
+        table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        table td {
+            background-color: #fafafa;
+        }
+
+        /* Стиль кнопки "Удалить" */
+        button {
+            padding: 6px 12px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #c0392b;
+        }
+
+        /* Стиль кнопки "Назад" */
+        .back-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            table th, table td {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            button {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+
+            .back-button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Список членов профсоюза</h1>
+
+<div class="container">
+    <table id="membersTable">
+        <thead>
+        <tr>
+            <th>Фамилия</th>
+            <th>Имя</th>
+            <th>Отчество</th>
+            <th>Статус членства</th>
+            <th>Номер телефона</th>
+            <th>Дата рождения</th>
+            <th>Email</th>
+            <th>Роль</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Данные будут вставлены динамически -->
+        </tbody>
+    </table>
+</div>
+
+<button class="back-button" onclick="location.href='/admin_main_menu'">Назад</button>
+
+<script>
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) {
+        console.error("Токен отсутствует");
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        if (!accessToken) {
+            console.error("Токен отсутствует");
+            return;
+        }
+
+        fetch(`/api/members_list`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+            },
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Ошибка авторизации");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.code === 200) {
+                    const members = data.users; // получаем список пользователей
+                    const membersTable = document.getElementById('membersTable').getElementsByTagName('tbody')[0];
+
+                    // Заполнение таблицы данными о членах
+                    members.forEach(member => {
+                        const row = membersTable.insertRow();
+                        row.insertCell(0).innerText = member.last_name;
+                        row.insertCell(1).innerText = member.first_name;
+                        row.insertCell(2).innerText = member.middle_name || 'Отсутствует'; // Отчество может быть пустым
+                        row.insertCell(3).innerText = member.membership_status;
+                        row.insertCell(4).innerText = member.phone_number;
+                        row.insertCell(5).innerText = member.date_birth;
+                        row.insertCell(6).innerText = member.email;
+                        row.insertCell(7).innerText = member.role;
+
+                        // Создание кнопки "Удалить" с привязкой id
+                        const actionsCell = row.insertCell(8);
+                        const deleteButton = document.createElement('button');
+                        deleteButton.innerText = 'Удалить';
+                        deleteButton.onclick = () => deleteMember(member.account_id); // Передаем id пользователя
+                        actionsCell.appendChild(deleteButton);
+                    });
+                } else {
+                    alert(data.message || "Ошибка авторизации");
+                    window.location.href = "/";
+                }
+            })
+            .catch(error => console.error("Ошибка:", error));
+    });
+
+    // Функция для удаления члена профсоюза
+    function deleteMember(id) {
+        fetch(`/api/delete_member`, {
+            method: 'DELETE',
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+            },
+            body: JSON.stringify({ id: id })
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('Член профсоюза успешно удалён.');
+                    location.reload();
+                } else {
+                    alert('Ошибка при удалении члена профсоюза.');
+                }
+            })
+            .catch(error => console.error('Ошибка:', error));
+    }
+
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="ru">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Список членов профсоюза</title>-->
+<!--</head>-->
+<!--<body>-->
+<!--<h1>Список членов профсоюза</h1>-->
+<!--<table id="membersTable">-->
+<!--    <thead>-->
+<!--    <tr>-->
+<!--        <th>Фамилия</th>-->
+<!--        <th>Имя</th>-->
+<!--        <th>Отчество</th>-->
+<!--        <th>Статус членства</th>-->
+<!--        <th>Номер телефона</th>-->
+<!--        <th>Дата рождения</th>-->
+<!--        <th>Email</th>-->
+<!--        <th>Роль</th>-->
+<!--        <th>Действия</th>-->
+<!--    </tr>-->
+<!--    </thead>-->
+<!--    <tbody>-->
+<!--    &lt;!&ndash; Здесь будет динамически заполняемый список членов &ndash;&gt;-->
+<!--    </tbody>-->
+<!--</table>-->
+<!--<button onclick="location.href='/admin_main_page'">Назад</button>-->
+
+<!--<script>-->
+<!--    const accessToken = localStorage.getItem("access_token");-->
+<!--    console.log(accessToken);-->
+<!--    if ( !accessToken) {-->
+<!--        console.error("Токен отсутствует");-->
+
+<!--    }-->
+<!--    document.addEventListener("DOMContentLoaded", function () {-->
+<!--        const accessToken = localStorage.getItem("access_token");-->
+<!--        if (!accessToken) {-->
+<!--            console.error("Токен отсутствует");-->
+<!--            return;-->
+<!--        }-->
+
+<!--        fetch(`/api/members_list`, {-->
+<!--            method: "GET",-->
+<!--            headers: {-->
+<!--                "Content-Type": "application/json",-->
+<!--                "Authorization": `Bearer ${localStorage.getItem("access_token")}`-->
+<!--            },-->
+<!--        })-->
+<!--            .then(response => {-->
+<!--                if (!response.ok) {-->
+<!--                    throw new Error("Ошибка авторизации");-->
+<!--                }-->
+<!--                return response.json();-->
+<!--            })-->
+<!--            .then(data => {-->
+<!--                if (data.code === 200) {-->
+<!--                    const members = data.users; // получаем список пользователей-->
+<!--                    const membersTable = document.getElementById('membersTable').getElementsByTagName('tbody')[0];-->
+
+<!--                    // Заполнение таблицы данными о членах-->
+<!--                    members.forEach(member => {-->
+<!--                        const row = membersTable.insertRow();-->
+<!--                        row.insertCell(0).innerText = member.last_name;-->
+<!--                        row.insertCell(1).innerText = member.first_name;-->
+<!--                        row.insertCell(2).innerText = member.middle_name || '—'; // Отчество может быть пустым-->
+<!--                        row.insertCell(3).innerText = member.membership_status;-->
+<!--                        row.insertCell(4).innerText = member.phone_number;-->
+<!--                        row.insertCell(5).innerText = member.date_birth;-->
+<!--                        row.insertCell(6).innerText = member.email;-->
+<!--                        row.insertCell(7).innerText = member.role;-->
+
+<!--                        // Создание кнопки "Удалить" с привязкой id-->
+<!--                        const actionsCell = row.insertCell(8);-->
+<!--                        const deleteButton = document.createElement('button');-->
+<!--                        deleteButton.innerText = 'Удалить';-->
+<!--                        deleteButton.onclick = () => deleteMember(member.account_id); // Передаем id пользователя-->
+<!--                        console.log(member.account_id);-->
+<!--                        actionsCell.appendChild(deleteButton);-->
+<!--                    });-->
+<!--                } else {-->
+<!--                    alert(data.message || "Ошибка авторизации");-->
+<!--                }-->
+<!--            })-->
+<!--            .catch(error => console.error("Ошибка:", error));-->
+<!--    });-->
+
+<!--    // Функция для удаления члена профсоюза-->
+<!--    function deleteMember(id) {-->
+<!--        console.log(id);-->
+<!--        fetch(`/api/delete_member`, {-->
+<!--            method: 'DELETE',-->
+<!--            headers: {-->
+<!--                "Content-Type": "application/json",-->
+<!--                "Authorization": `Bearer ${localStorage.getItem("access_token")}`-->
+<!--            },-->
+<!--            body: JSON.stringify({ id: id }) // передаем id пользователя в теле запроса-->
+<!--        })-->
+<!--            .then(response => {-->
+<!--                if (response.ok) {-->
+<!--                    alert('Член профсоюза успешно удалён.');-->
+<!--                    location.reload();-->
+<!--                } else {-->
+<!--                    alert('Ошибка при удалении члена профсоюза.');-->
+<!--                }-->
+<!--            })-->
+<!--            .catch(error => console.error('Ошибка:', error));-->
+<!--    }-->
+
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
