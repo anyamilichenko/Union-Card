@@ -1,13 +1,28 @@
 package backend
 
 import (
-	"bilet/backend/controllers"
+	"bilet/backend/handler"
+	"bilet/backend/middleware"
+	"bilet/backend/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	}
+}
+
 func RegisterTemplates(r *gin.Engine) {
-	// Главная страница (с формой авторизации)
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "main_page.html", gin.H{})
 	})
@@ -37,19 +52,45 @@ func RegisterTemplates(r *gin.Engine) {
 	})
 }
 
-func RegisterHandlers(r *gin.Engine) {
-	api := r.Group("api")
-	api.GET("/personal_account", controllers.PersonalAccount)
-	api.GET("/userinfo", controllers.GetUserInfo)
-	api.GET("/admin_prof_bilet", controllers.GetUserInfo)
-	api.POST("/add_member", controllers.AddMember)
-	api.GET("/admin_main_page", controllers.AdminMain)
-	api.GET("/members_list", controllers.GetAllUsers)
-	api.DELETE("/delete_member", controllers.DeleteUser)
+func SetupRouter(
+	authHandler *handler.AuthHandler,
+	userHandler *handler.UserHandler,
+	authService service.AuthService,
+) *gin.Engine {
+	r := gin.Default()
 
-	auth := api.Group("auth")
-	auth.POST("/login", controllers.Login)
-	auth.POST("/reset_password", controllers.ResetPassword)
-	auth.POST("/create_tokens", controllers.CreateTokens)
-	auth.POST("/logout", controllers.Logout)
+	// ОЧЕНЬ ВАЖНО: Загружаем HTML-шаблоны
+	r.LoadHTMLGlob("frontend/templates/**/*")
+
+	r.Use(CORSMiddleware())
+
+	// Регистрируем шаблоны ДО API маршрутов
+	RegisterTemplates(r)
+
+	// Публичные маршруты API
+	r.POST("/api/auth/login", authHandler.Login)
+	r.POST("/api/auth/reset_password", authHandler.ResetPassword)
+	r.POST("/api/auth/create_tokens", authHandler.CreateTokens)
+
+	// Защищенные маршруты API
+	authRoutes := r.Group("/api")
+	authRoutes.Use(middleware.AuthMiddleware(authService))
+	{
+		authRoutes.GET("/admin_prof_bilet", userHandler.GetUserInfo) // Должен возвращать данные пользователя
+		authRoutes.POST("/auth/logout", authHandler.Logout)
+		authRoutes.GET("/members_list", userHandler.GetAllUsers)
+		authRoutes.GET("/personal_account", userHandler.GetUserInfo)
+		authRoutes.GET("/userinfo", userHandler.GetUserInfo)
+	}
+
+	// Админские маршруты API
+	adminRoutes := r.Group("/api/admin")
+	adminRoutes.Use(middleware.AuthMiddleware(authService), middleware.AdminMiddleware())
+	{
+		adminRoutes.GET("/members_list", userHandler.GetAllUsers)
+		adminRoutes.POST("/add_member", userHandler.AddMember)
+		adminRoutes.DELETE("/delete_member", userHandler.DeleteUser)
+	}
+
+	return r
 }
