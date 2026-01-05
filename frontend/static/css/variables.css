@@ -1,0 +1,41 @@
+:root {
+    /* Color variables */
+    --primary-color: #4CAF50;
+    --primary-hover: #45a049;
+    --secondary-color: #007bff;
+    --secondary-hover: #0056b3;
+    --danger-color: #dc3545;
+    --danger-hover: #a71d2a;
+    --background-color: #f4f7fc;
+    --card-background: #fff;
+    --text-color: #333;
+    --light-text: #fff;
+    --border-color: #ddd;
+    --input-border: #ccc;
+    --table-header-bg: #007bff;
+    --table-cell-bg: #fafafa;
+
+    /* Spacing variables */
+    --spacing-xs: 5px;
+    --spacing-sm: 10px;
+    --spacing-md: 15px;
+    --spacing-lg: 20px;
+    --spacing-xl: 30px;
+
+    /* Border radius */
+    --border-radius-sm: 4px;
+    --border-radius-md: 5px;
+    --border-radius-lg: 8px;
+    --border-radius-xl: 10px;
+
+    /* Shadow */
+    --box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+    /* Font */
+    --font-family: 'Arial', sans-serif;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 18px;
+    --font-size-xl: 24px;
+    --font-size-xxl: 28px;
+}

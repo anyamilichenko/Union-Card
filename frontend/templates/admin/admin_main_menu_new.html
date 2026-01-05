@@ -1,0 +1,56 @@
+{{> header title="Главная страница администратора" isAdmin=true}}
+
+<div class="main-container">
+    <div class="card">
+        <h2 id="welcome-message"></h2>
+        <div class="button-container">
+            <button onclick="goToAddMember()">Добавить члена профсоюза</button>
+            <button onclick="goToAdminTicket()">Перейти к профсоюзному билету</button>
+            <button onclick="goToMembersList()">Перейти к списку членов профсоюза</button>
+            <button class="danger-button" onclick="logout()">Выйти</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async function () {
+        try {
+            const data = await API.get('/api/admin_main_page');
+
+            if (data.code === 200) {
+                const welcomeMessage = `Добро пожаловать, ${data.user.first_name}!`;
+                document.getElementById('welcome-message').textContent = welcomeMessage;
+            } else {
+                alert(data.message || "Ошибка авторизации");
+                window.location.href = "/";
+            }
+        } catch (error) {
+            console.error("Error loading admin page:", error);
+            alert("Ошибка загрузки страницы");
+            window.location.href = "/";
+        }
+    });
+
+    function goToAddMember() {
+        window.location.href = '/add_member';
+    }
+
+    function goToAdminTicket() {
+        window.location.href = '/admin_prof_bilet';
+    }
+
+    function goToMembersList() {
+        window.location.href = '/members_list';
+    }
+
+    async function logout() {
+        try {
+            await API.logout();
+        } catch (error) {
+            console.error("Ошибка при выходе:", error);
+            alert("Ошибка при выходе. Попробуйте снова.");
+        }
+    }
+</script>
+
+{{> footer currentYear=2026}}

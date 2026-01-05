@@ -1,0 +1,51 @@
+{{> header title="Авторизация" isAdmin=false}}
+
+<div class="main-container">
+    <div class="card">
+        <h2>Вход</h2>
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Пароль">
+            <button type="button" onclick="login()">Войти</button>
+            <button type="button" class="secondary-button" onclick="resetPassword()">Забыли пароль /
+                Зарегистрироваться</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    async function login() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        try {
+            await API.login(email, password);
+        } catch (error) {
+            console.error("Ошибка:", error);
+            alert("Произошла ошибка. Попробуйте еще раз.");
+        }
+    }
+
+    async function resetPassword() {
+        const email = document.getElementById('email').value;
+
+        if (!email) {
+            alert('Введите email для сброса или получения пароля');
+            return;
+        }
+
+        try {
+            const result = await API.resetPassword(email);
+            if (result.success) {
+                alert('Новый пароль отправлен на почту.');
+            } else {
+                alert('Ошибка: ' + result.message);
+            }
+        } catch (error) {
+            console.error("Ошибка:", error);
+            alert("Произошла ошибка при сбросе пароля.");
+        }
+    }
+</script>
+
+{{> footer currentYear=2026}}

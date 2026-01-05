@@ -1,0 +1,228 @@
+@import 'variables.css';
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    margin: 0;
+    padding: 0;
+    color: var(--text-color);
+}
+
+h1 {
+    font-size: var(--font-size-xxl);
+    color: var(--primary-color);
+    padding: var(--spacing-lg);
+    margin-top: 0;
+    text-align: center;
+}
+
+h2 {
+    font-size: var(--font-size-xl);
+    color: var(--text-color);
+    margin: var(--spacing-sm) 0;
+    text-align: center;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: var(--spacing-lg);
+}
+
+.card {
+    background-color: var(--card-background);
+    padding: var(--spacing-xl);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--box-shadow);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+}
+
+.container {
+    width: 90%;
+    max-width: 1000px;
+    margin-top: var(--spacing-xl);
+    background-color: var(--card-background);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--box-shadow);
+    padding: var(--spacing-lg);
+}
+
+button {
+    background-color: var(--primary-color);
+    color: var(--light-text);
+    font-size: var(--font-size-md);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: var(--primary-hover);
+}
+
+button:focus {
+    outline: none;
+}
+
+.button-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.secondary-button {
+    background-color: var(--secondary-color);
+}
+
+.secondary-button:hover {
+    background-color: var(--secondary-hover);
+}
+
+.danger-button {
+    background-color: var(--danger-color);
+}
+
+.danger-button:hover {
+    background-color: var(--danger-hover);
+}
+
+.back-button {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background-color: var(--secondary-color);
+}
+
+.back-button:hover {
+    background-color: var(--secondary-hover);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="tel"],
+select {
+    width: 100%;
+    padding: var(--spacing-sm);
+    margin: var(--spacing-sm) 0;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--input-border);
+    font-size: var(--font-size-md);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--spacing-lg);
+}
+
+table th,
+table td {
+    padding: var(--spacing-sm);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+table th {
+    background-color: var(--table-header-bg);
+    color: var(--light-text);
+    font-weight: bold;
+}
+
+table td {
+    background-color: var(--table-cell-bg);
+}
+
+.site-header {
+    background-color: var(--primary-color);
+    color: var(--light-text);
+    padding: var(--spacing-md) var(--spacing-lg);
+    box-shadow: var(--box-shadow);
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.site-title {
+    margin: 0;
+    padding: 0;
+    color: var(--light-text);
+    font-size: var(--font-size-xl);
+}
+
+.main-nav {
+    display: flex;
+}
+
+.nav-list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--spacing-lg);
+}
+
+.nav-list a {
+    color: var(--light-text);
+    text-decoration: none;
+    font-weight: bold;
+    transition: opacity 0.3s;
+}
+
+.nav-list a:hover {
+    opacity: 0.8;
+}
+
+.main-content {
+    min-height: 70vh;
+    padding: var(--spacing-lg);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.site-footer {
+    background-color: var(--text-color);
+    color: var(--light-text);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-xl);
+    text-align: center;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+
+    table th,
+    table td {
+        padding: var(--spacing-xs);
+        font-size: var(--font-size-sm);
+    }
+
+    button {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: var(--font-size-sm);
+    }
+
+    .back-button {
+        font-size: var(--font-size-sm);
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+}
