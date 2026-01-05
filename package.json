@@ -1,0 +1,17 @@
+{
+    "name": "union-card",
+    "version": "1.0.0",
+    "description": "Union Card Application",
+    "type": "module",
+    "scripts": {
+        "validate:html": "htmlhint frontend/templates/**/*.html",
+        "validate:css": "stylelint frontend/static/css/**/*.css",
+        "validate": "npm run validate:html && npm run validate:css",
+        "w3c:validate": "node scripts/w3c-validate.js"
+    },
+    "devDependencies": {
+        "htmlhint": "^1.1.4",
+        "stylelint": "^15.10.3",
+        "node-fetch": "^3.3.2"
+    }
+}

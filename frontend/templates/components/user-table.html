@@ -1,0 +1,99 @@
+<div class="table-container">
+    <table class="user-table">
+        <thead>
+            <tr>
+                <th>Фамилия</th>
+                <th>Имя</th>
+                <th>Отчество</th>
+                <th>Статус членства</th>
+                <th>Номер телефона</th>
+                <th>Дата рождения</th>
+                <th>Email</th>
+                <th>Роль</th>
+                {{#if isAdmin}}
+                <th>Действия</th>
+                {{/if}}
+            </tr>
+        </thead>
+        <tbody id="userTableBody">
+            <!-- Table content will be populated dynamically -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Function to render the user table
+    function renderUserTable(users, isAdmin = false) {
+        const tableBody = document.getElementById('userTableBody');
+        tableBody.innerHTML = '';
+
+        users.forEach(user => {
+            const row = document.createElement('tr');
+
+            // Add user data cells
+            row.innerHTML = `
+                <td>${user.last_name}</td>
+                <td>${user.first_name}</td>
+                <td>${user.middle_name || 'Отсутствует'}</td>
+                <td>${user.membership_status}</td>
+                <td>${user.phone_number}</td>
+                <td>${user.date_birth}</td>
+                <td>${user.email}</td>
+                <td>${user.role}</td>
+            `;
+
+            // Add action buttons for admin
+            if (isAdmin) {
+                const actionsCell = document.createElement('td');
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'danger-button';
+                deleteButton.innerText = 'Удалить';
+                deleteButton.onclick = () => deleteUser(user.account_id);
+                actionsCell.appendChild(deleteButton);
+                row.appendChild(actionsCell);
+            }
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    // Function to delete a user (admin only)
+    async function deleteUser(userId) {
+        if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+            try {
+                const result = await API.delete('/api/delete_member', { id: userId });
+
+                if (result.code === 200) {
+                    alert('Пользователь успешно удален');
+                    // Reload the table
+                    loadUsers();
+                } else {
+                    alert(`Ошибка: ${result.message || 'Не удалось удалить пользователя'}`);
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Произошла ошибка при удалении пользователя');
+            }
+        }
+    }
+
+    // Function to load users from the API
+    async function loadUsers() {
+        try {
+            // The endpoint might be different based on whether it's admin or user view
+            const endpoint = isAdminView ? '/api/members_list' : '/api/user_list';
+            const result = await API.get(endpoint);
+
+            if (result.code === 200) {
+                renderUserTable(result.users, isAdminView);
+            } else {
+                console.error('Failed to load users:', result.message);
+            }
+        } catch (error) {
+            console.error('Error loading users:', error);
+        }
+    }
+
+    // Initialize the table when the component is loaded
+    document.addEventListener('DOMContentLoaded', loadUsers);
+</script>
