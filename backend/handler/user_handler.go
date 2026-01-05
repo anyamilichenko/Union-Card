@@ -165,29 +165,35 @@ func (h *UserHandler) AddMember(c *gin.Context) {
 }
 
 func (h *UserHandler) DeleteUser(c *gin.Context) {
-	token, err := c.Cookie("access_token")
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, code.Unauthorized.SetMessage("Token required"))
+	log.Println("DeleteUser handler called")
+
+	// ВАЖНО: Проверяем, что получаем данные из контекста
+	claims, exists := c.Get("claims")
+	if !exists {
+		log.Println("ERROR: Claims not found in context!")
+		c.JSON(http.StatusUnauthorized, code.Unauthorized.SetMessage("Authentication required"))
 		return
 	}
 
-	claims, errCode := h.authService.ValidateToken(token)
-	if errCode != nil {
-		c.JSON(errCode.Code, errCode)
-		return
-	}
+	userClaims := claims.(*entity.Claims)
+	log.Printf("Admin ID from context: %d", userClaims.UserId)
 
+	// Получаем ID пользователя для удаления из JSON тела
 	var requestData struct {
 		ID uint `json:"id" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&requestData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		log.Printf("Error binding JSON: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
 		return
 	}
 
-	errCode = h.userService.DeleteUser(claims.UserId, requestData.ID)
+	log.Printf("Deleting user ID: %d by admin ID: %d", requestData.ID, userClaims.UserId)
+
+	errCode := h.userService.DeleteUser(userClaims.UserId, requestData.ID)
 	if errCode != nil {
+		log.Printf("Service error: %v", errCode)
 		c.JSON(errCode.Code, errCode)
 		return
 	}
