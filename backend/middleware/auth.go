@@ -88,22 +88,3 @@ func AdminMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
-
-func extractToken(c *gin.Context) string {
-	// 1. Попробовать получить из куки
-	token, err := c.Cookie("access_token")
-	if err == nil && token != "" {
-		return token
-	}
-
-	// 2. Попробовать получить из заголовка Authorization
-	authHeader := c.GetHeader("Authorization")
-	if authHeader != "" {
-		parts := strings.Split(authHeader, " ")
-		if len(parts) == 2 && parts[0] == "Bearer" {
-			return parts[1]
-		}
-	}
-
-	return ""
-}

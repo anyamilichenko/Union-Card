@@ -1,33 +1,30 @@
+{{define "header"}}
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}}</title>
+    <title>{{.Title}}</title>
     <link rel="stylesheet" href="/static/css/main.css">
-    {{#if customCss}}
-    <link rel="stylesheet" href="{{customCss}}">
-    {{/if}}
 </head>
-
 <body>
-    <header class="site-header">
-        <div class="header-container">
-            <h1 class="site-title">Профсоюз</h1>
-            <nav class="main-nav">
-                <ul class="nav-list">
-                    {{#if isAdmin}}
-                    <li><a href="/admin_main_menu">Главная</a></li>
-                    <li><a href="/add_member">Добавить члена профсоюза</a></li>
-                    <li><a href="/admin_prof_bilet">Профсоюзный билет</a></li>
-                    <li><a href="/members_list">Список членов профсоюза</a></li>
-                    {{else}}
-                    <li><a href="/personal_account">Личный кабинет</a></li>
-                    <li><a href="/prof_bilet">Профсоюзный билет</a></li>
-                    {{/if}}
-                </ul>
-            </nav>
-        </div>
-    </header>
-    <main class="main-content">
+<header class="site-header">
+    <div class="header-container">
+        <h1 class="site-title">Профсоюз</h1>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                {{if .IsAdmin}}
+                <li><a href="/admin_main_menu">Главная</a></li>
+                <li><a href="/add_member">Добавить члена профсоюза</a></li>
+                <li><a href="/admin_prof_bilet">Профсоюзный билет</a></li>
+                <li><a href="/members_list">Список членов профсоюза</a></li>
+                {{else}}
+                <li><a href="/personal_account">Личный кабинет</a></li>
+                <li><a href="/prof_bilet">Профсоюзный билет</a></li>
+                {{end}}
+            </ul>
+        </nav>
+    </div>
+</header>
+{{end}}
+<!--<main class="main-content">-->

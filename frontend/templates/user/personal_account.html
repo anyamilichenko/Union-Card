@@ -1,101 +1,115 @@
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-        .container {
-            text-align: center;
-        }
-        button {
-            padding: 10px 20px;
-            margin-top: 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
+<!--<!DOCTYPE html>-->
+<!--<html lang="ru">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Личный кабинет</title>-->
+<!--    <style>-->
+<!--        body {-->
+<!--            font-family: Arial, sans-serif;-->
+<!--            display: flex;-->
+<!--            justify-content: center;-->
+<!--            align-items: center;-->
+<!--            height: 100vh;-->
+<!--            margin: 0;-->
+<!--            background-color: #f0f0f0;-->
+<!--        }-->
+<!--        .container {-->
+<!--            text-align: center;-->
+<!--        }-->
+<!--        button {-->
+<!--            padding: 10px 20px;-->
+<!--            margin-top: 20px;-->
+<!--            font-size: 16px;-->
+<!--            cursor: pointer;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div class="container">-->
+<!--    <h1>Личный кабинет</h1>-->
+<!--    <button onclick="location.href='/prof_bilet'">Перейти к профсоюзному билету</button>-->
+<!--</div>-->
+<!--</body>-->
+<!--</html>-->
+
+<!--<script>-->
+<!--    const accessToken = localStorage.getItem("access_token");-->
+<!--    console.log(accessToken);-->
+<!--    if ( !accessToken) {-->
+<!--        console.error("Токен отсутствует");-->
+
+<!--    }-->
+<!--    //-->
+<!--    document.addEventListener("DOMContentLoaded", async function () {-->
+<!--        const accessToken = localStorage.getItem("access_token");-->
+<!--        if (!accessToken) {-->
+<!--            console.error("Токен отсутствует");-->
+<!--            window.location.href = "/";-->
+<!--            return;-->
+<!--        }-->
+
+<!--        try {-->
+<!--            // Проверяем, является ли пользователь администратором-->
+<!--            const userInfo = await API.get('/api/userinfo');-->
+
+<!--            if (userInfo.code === 200 && userInfo.user) {-->
+<!--                if (userInfo.user.role === 'admin') {-->
+<!--                    // Администратора перенаправляем в админскую панель-->
+<!--                    window.location.href = '/admin_main_menu';-->
+<!--                } else {-->
+<!--                    // Обычного пользователя перенаправляем на его билет-->
+<!--                    window.location.href = '/prof_bilet';-->
+<!--                }-->
+<!--            } else {-->
+<!--                console.error("Ошибка при получении данных пользователя:", userInfo.message);-->
+<!--                window.location.href = "/";-->
+<!--            }-->
+<!--        } catch (error) {-->
+<!--            console.error("Произошла ошибка:", error);-->
+<!--            window.location.href = "/";-->
+<!--        }-->
+<!--    });-->
+
+
+<!--</script>-->
+
+{{template "header" .}}
+
 <div class="container">
     <h1>Личный кабинет</h1>
-    <button onclick="location.href='/prof_bilet'">Перейти к профсоюзному билету</button>
+    <div class="button-container">
+        <button onclick="location.href='/userinfo'">Перейти к профсоюзному билету</button>
+        <button onclick="location.href='/'">На главную</button>
+        <button class="danger-button" onclick="logout()">Выйти</button>
+    </div>
 </div>
-</body>
-</html>
 
 <script>
-    const accessToken = localStorage.getItem("access_token");
-    console.log(accessToken);
-    if ( !accessToken) {
-        console.error("Токен отсутствует");
+    console.log('Личный кабинет загружен');
 
+    // Проверяем пользователя
+    async function checkUser() {
+        try {
+            const result = await API.get('/api/personal_account');
+            console.log('Пользователь проверен:', result);
+        } catch (error) {
+            console.error('Ошибка проверки пользователя:', error);
+            window.location.href = '/';
+        }
     }
-    document.addEventListener("DOMContentLoaded", function () { //  /${account_id}
-        // Отправляем AJAX-запрос для получения информации о пользователе
-        debugger
-        fetch(`/api/personal_account`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            },
-        }).then(response => {
-            console.log(response);
-            if (!response.ok) {
-                throw new Error("Ошибка авторизации");
-            }
-            return response.json();
-        }).then(data => {
-            console.log(localStorage.getItem("access_token"));
-            debugger;
-            if (data.code === 200) {
-                // Если запрос успешен, перенаправляем на страницу пользовательской информации
-                window.location.href = `/userinfo`;
-            } else {
-                console.error("Ошибка при получении данных пользователя:", data.message);
-            }
-        })
-            .catch(error => {
-                console.error("Произошла ошибка:", error);
-            });
-    });
 
+    // Проверяем при загрузке
+    document.addEventListener('DOMContentLoaded', checkUser);
 
+    async function logout() {
+        try {
+            await API.logout();
+        } catch (error) {
+            console.error('Ошибка при выходе:', error);
+        }
+    }
 </script>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+{{template "footer" .}}

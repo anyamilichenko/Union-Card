@@ -24,31 +24,52 @@ func CORSMiddleware() gin.HandlerFunc {
 
 func RegisterTemplates(r *gin.Engine) {
 	r.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "main_page.html", gin.H{})
+		c.HTML(http.StatusOK, "main_page.html", gin.H{
+			"Title":   "Авторизация",
+			"IsAdmin": false,
+		})
 	})
 
 	r.GET("/admin_main_menu", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "admin_main_menu.html", gin.H{})
+		c.HTML(http.StatusOK, "admin_main_menu.html", gin.H{
+			"Title":   "Главная страница администратора",
+			"IsAdmin": true,
+		})
 	})
 
 	r.GET("/add_member", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "add_member.html", gin.H{})
+		c.HTML(http.StatusOK, "add_member.html", gin.H{
+			"Title":   "Добавить члена профсоюза",
+			"IsAdmin": true,
+		})
 	})
 
 	r.GET("/personal_account", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "personal_account.html", gin.H{})
+		c.HTML(http.StatusOK, "personal_account.html", gin.H{
+			"Title":   "Личный кабинет",
+			"IsAdmin": false,
+		})
 	})
 
 	r.GET("/admin_prof_bilet", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "admin_prof_bilet.html", gin.H{})
+		c.HTML(http.StatusOK, "admin_prof_bilet.html", gin.H{
+			"Title":   "Профсоюзный билет (админ)",
+			"IsAdmin": true,
+		})
 	})
 
 	r.GET("/members_list", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "member_list.html", gin.H{})
+		c.HTML(http.StatusOK, "members_list.html", gin.H{
+			"Title":   "Список членов профсоюза",
+			"IsAdmin": true,
+		})
 	})
 
 	r.GET("/userinfo", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "prof_bilet.html", gin.H{})
+		c.HTML(http.StatusOK, "prof_bilet.html", gin.H{
+			"Title":   "Профсоюзный билет",
+			"IsAdmin": false,
+		})
 	})
 }
 
@@ -59,12 +80,20 @@ func SetupRouter(
 ) *gin.Engine {
 	r := gin.Default()
 
-	// ОЧЕНЬ ВАЖНО: Загружаем HTML-шаблоны
-	r.LoadHTMLGlob("frontend/templates/**/*")
+	// Способ 1: Загружаем все HTML файлы из всех поддиректорий
+	r.LoadHTMLGlob("frontend/templates/**/*.html")
+
+	// Способ 2: Загружаем шаблоны из каждой поддиректории отдельно
+	// r.LoadHTMLGlob("frontend/templates/*.html")
+	// r.LoadHTMLGlob("frontend/templates/admin/*.html")
+	// r.LoadHTMLGlob("frontend/templates/user/*.html")
+	// r.LoadHTMLGlob("frontend/templates/components/*.html")
+
+	r.Static("/static", "frontend/static")
 
 	r.Use(CORSMiddleware())
 
-	// Регистрируем шаблоны ДО API маршрутов
+	// Регистрируем шаблоны
 	RegisterTemplates(r)
 
 	// Публичные маршруты API
@@ -76,7 +105,10 @@ func SetupRouter(
 	authRoutes := r.Group("/api")
 	authRoutes.Use(middleware.AuthMiddleware(authService))
 	{
-		authRoutes.GET("/admin_prof_bilet", userHandler.GetUserInfo) // Должен возвращать данные пользователя
+		// Добавляем API маршрут для admin_main_page
+		authRoutes.GET("/admin_main_page", userHandler.GetUserInfo)
+
+		authRoutes.GET("/admin_prof_bilet", userHandler.GetUserInfo)
 		authRoutes.POST("/auth/logout", authHandler.Logout)
 		authRoutes.GET("/members_list", userHandler.GetAllUsers)
 		authRoutes.GET("/personal_account", userHandler.GetUserInfo)

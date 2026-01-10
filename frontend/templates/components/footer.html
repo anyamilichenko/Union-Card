@@ -1,25 +1,25 @@
+{{define "footer"}}
 </main>
 <footer class="site-footer">
     <div class="footer-container">
-        <p>&copy; {{currentYear}} Профсоюз. Все права защищены.</p>
+        <p>&copy; {{.CurrentYear}} Профсоюз. Все права защищены.</p>
     </div>
 </footer>
 
-<!-- Common JavaScript -->
 <script type="module">
     import API from '/static/js/api.js';
     window.API = API;
 </script>
 
-{{#if customJs}}
-<script src="{{customJs}}"></script>
-{{/if}}
+{{if .CustomJs}}
+<script src="{{.CustomJs}}"></script>
+{{end}}
 
-{{#if inlineScript}}
+{{if .InlineScript}}
 <script>
-    { { inlineScript } }
+    {{.InlineScript}}
 </script>
-{{/if}}
+{{end}}
 </body>
-
 </html>
+{{end}}

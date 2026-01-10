@@ -121,20 +121,26 @@
         formData.append('membershipStatus', document.getElementById('membershipStatus').value);
         formData.append('role', document.getElementById('role').value);
 
-        fetch('/api/add_member', {
+        // ИЗМЕНИТЕ эту строку:
+        fetch('/api/admin/add_member', {  // было /api/add_member
             method: 'POST',
             headers: {
                 "Authorization": `Bearer ${localStorage.getItem("access_token")}`
             },
             body: formData
         })
-            .then(response => {
-                if (response.ok) {
+            .then(response => response.json())  // Добавьте это
+            .then(data => {
+                if (data.code === 200) {
                     alert('Член профсоюза добавлен!');
                     location.href = '/admin_main_menu';
                 } else {
-                    alert('Ошибка при добавлении');
+                    alert('Ошибка при добавлении: ' + (data.message || 'Неизвестная ошибка'));
                 }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Ошибка при добавлении');
             });
     }
 

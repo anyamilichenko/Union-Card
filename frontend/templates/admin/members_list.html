@@ -1,0 +1,134 @@
+<!--{{template "header" .}}-->
+
+<!--<div class="container">-->
+<!--    <h2>Список членов профсоюза</h2>-->
+<!--    {{template "user-table" .}}-->
+<!--</div>-->
+
+<!--<div class="button-container">-->
+<!--    <button class="secondary-button" onclick="location.href='/admin_main_menu'">Назад</button>-->
+<!--</div>-->
+
+<!--<script>-->
+<!--    const isAdminView = true;-->
+<!--</script>-->
+
+<!--{{template "footer" .}}-->
+{{template "header" .}}
+
+<div class="container">
+    <h2>Список членов профсоюза</h2>
+    <div class="table-container">
+        <table class="user-table">
+            <thead>
+            <tr>
+                <th>Фамилия</th>
+                <th>Имя</th>
+                <th>Отчество</th>
+                <th>Статус членства</th>
+                <th>Номер телефона</th>
+                <th>Дата рождения</th>
+                <th>Email</th>
+                <th>Роль</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody id="userTableBody">
+            <tr><td colspan="9" id="loadingMessage">Загрузка...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="button-container">
+    <button class="secondary-button" onclick="location.href='/admin_main_menu'">Назад</button>
+</div>
+
+<script>
+    console.log('Страница members_list загружена');
+    console.log('Токен:', localStorage.getItem('access_token'));
+
+    async function loadUsers() {
+        try {
+            console.log('Пытаюсь загрузить пользователей...');
+
+            // Вариант 1: Админский эндпоинт (требует админских прав)
+            const result = await API.get('/api/admin/members_list');
+            console.log('Результат API:', result);
+
+            if (result.code === 200) {
+                renderUserTable(result.users);
+            } else {
+                console.error('Ошибка от API:', result.message);
+                document.getElementById('loadingMessage').textContent = 'Ошибка: ' + result.message;
+            }
+        } catch (error) {
+            console.error('Ошибка при загрузке:', error);
+            document.getElementById('loadingMessage').textContent = 'Ошибка загрузки данных';
+
+            // Попробуем обычный эндпоинт как fallback
+            try {
+                console.log('Пробую обычный эндпоинт...');
+                const result2 = await API.get('/api/members_list');
+                console.log('Результат обычного эндпоинта:', result2);
+                if (result2.code === 200) {
+                    renderUserTable(result2.users);
+                }
+            } catch (error2) {
+                console.error('Ошибка и в обычном эндпоинте:', error2);
+            }
+        }
+    }
+
+    function renderUserTable(users) {
+        const tableBody = document.getElementById('userTableBody');
+
+        if (!users || users.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="9">Нет данных</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = '';
+
+        users.forEach(user => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${user.last_name || ''}</td>
+                <td>${user.first_name || ''}</td>
+                <td>${user.middle_name || 'Отсутствует'}</td>
+                <td>${user.membership_status || ''}</td>
+                <td>${user.phone_number || ''}</td>
+                <td>${user.date_birth || ''}</td>
+                <td>${user.email || ''}</td>
+                <td>${user.role || ''}</td>
+                <td>
+                    <button class="danger-button" onclick="deleteUser(${user.account_id || user.id})">Удалить</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        console.log(`Отображено ${users.length} пользователей`);
+    }
+
+    async function deleteUser(userId) {
+        if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+            try {
+                const result = await API.delete('/api/admin/delete_member', { id: userId });
+                if (result.code === 200) {
+                    alert('Пользователь успешно удален');
+                    loadUsers();
+                } else {
+                    alert(`Ошибка: ${result.message || 'Не удалось удалить пользователя'}`);
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Произошла ошибка при удалении пользователя');
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadUsers);
+</script>
+
+{{template "footer" .}}
